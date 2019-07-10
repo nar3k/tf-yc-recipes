@@ -23,6 +23,7 @@ cloud-init.yaml has some loging implemented to run instance group - at the beggi
 - Copy this repo
 - copy terraform.tfvars_example to terraform.tfvars file
 - fill  terraform.tfvars vars with yours cloud id , folder id and token
+- perform `terraform init`
 - perform `terraform apply`
 
 ## Experiments

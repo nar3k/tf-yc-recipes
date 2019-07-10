@@ -1,0 +1,59 @@
+#cloud-config
+version: "key"
+docker_image: "nginx"
+users:
+  - name: user1
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh-authorized-keys:
+      - "${ssh_key}"
+  - name: user2
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh-authorized-keys:
+      - "${ssh_key}"
+write_files:
+  - content: |
+        #!/bin/sh
+
+        sleep 10
+
+        while true; do ping -c1 www.google.com && sleep 5 > /dev/null && break; done
+        while true; do ping -c1 www.debian.org && sleep 5 > /dev/null && break; done
+        while true; do ping -c1 www.ubuntu.com && sleep 5 > /dev/null && break; done
+        while true; do ping -c1 www.centos.com && sleep 5 > /dev/null && break; done
+        sudo yum install -y epel-release
+        sudo yum-config-manager     --add-repo     https://download.docker.com/linux/centos/docker-ce.repo
+        sudo yum install -y yum-utils   device-mapper-persistent-data  lvm2 python-pip jq
+        sudo pip install yq
+        DOCKER_IMAGE=$(curl -s http://169.254.169.254/latest/user-data/ | yq .docker_image |  tr -d '"')
+        sudo yum install -y docker-ce docker-ce-cli containerd.io
+        sudo systemctl start docker
+        sudo systemctl enable docker
+
+        sudo docker run --network=host --restart=always -d $DOCKER_IMAGE
+
+    path: /home/centos/docker.sh
+    permissions: '0755'
+
+  - content: |
+        SHELL=/bin/bash
+        PATH=/sbin:/bin:/usr/sbin:/usr/bin
+        MAILTO=root
+
+        @reboot root /home/centos/docker-restart.sh
+
+    path: /etc/cron.d/docker
+    permissions: '0644'
+  - content: |
+        #!/bin/sh
+        DOCKER_IMAGE=$(curl -s http://169.254.169.254/latest/user-data/ | yq .docker_image |  tr -d '"')
+        sudo docker rm -f $(docker ps -a -q)
+        sudo docker rmi -f $(docker images -q)
+        sudo docker run  --network=host $DOCKER_IMAGE
+
+    path: /home/centos/docker-restart.sh
+    permissions: '0755'
+
+runcmd:
+  - [ sh, /home/centos/docker.sh ]

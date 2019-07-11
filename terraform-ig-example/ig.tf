@@ -66,4 +66,7 @@ resource "yandex_compute_instance_group" "ig" {
     max_unavailable = 1
     max_expansion = 0
   }
+  depends_on = [
+    yandex_resourcemanager_folder_iam_binding.admin,
+  ]
 }

@@ -1,0 +1,10 @@
+token   =  ""
+cloud_id  = ""
+folder_id = ""
+public_key_path = "~/.ssh/id_rsa.pub"
+
+network_folder_id = ""
+staging_folder_id = ""
+staging_cidr = "10.100.0.0/24"
+production_folder_id = ""
+production_cidr = "10.100.1.0/24"
